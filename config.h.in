@@ -1,0 +1,3 @@
+// the configured options and settings for cplusplus
+#define cplusplus_VERSION_MAJOR @cplusplus_VERSION_MAJOR@
+#define cplusplus_VERSION_MINOR @cplusplus_VERSION_MINOR@
