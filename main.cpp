@@ -45,16 +45,6 @@ const chrono::milliseconds kTimeout{ 5ms };
 /** TEST 1. DnsResolver */
 void test1() {
 
-    // Configure log options.
-    boost::log::add_file_log(
-        boost::log::keywords::target_file_name = "test1.log",
-        boost::log::keywords::file_name = "test1.log"
-    );
-    boost::log::core::get()->set_filter
-    (
-        boost::log::trivial::severity >= boost::log::trivial::debug
-    );
-
     /** Launch tasks to resolve host using DNS servers. */
     BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << " ======================= LOOKUP STARTED =========================";
 
@@ -147,16 +137,6 @@ vector < tuple<vector<int>, vector<int> > > data2 = {
 /** Test 2. Set intersection with repetitions. */
 void test2() {
 
-    // Configure log options.
-    boost::log::add_file_log(
-        boost::log::keywords::target_file_name = "test2.log",
-        boost::log::keywords::file_name = "test2.log"
-    );
-    boost::log::core::get()->set_filter
-    (
-        boost::log::trivial::severity >= boost::log::trivial::debug
-    );
-
     // Helper lambda for printing small arrays.
     Algorithms<int> alg;
 
@@ -219,16 +199,6 @@ void test2() {
 
 void test3() {
 
-    // Configure log options.
-    boost::log::add_file_log(
-        boost::log::keywords::target_file_name = "test3.log",
-        boost::log::keywords::file_name = "test3.log"
-    );
-    boost::log::core::get()->set_filter
-    (
-        boost::log::trivial::severity >= boost::log::trivial::debug
-    );
-
     // Test data.
     vector<Segments<int>> data3 = {
         {make_pair(1,3), make_pair(4,5), make_pair(8,10)}, // not intersected
@@ -259,6 +229,16 @@ void test3() {
 }
 
 int main(int argc, char** argv) {
+    // Configure log options.
+    boost::log::add_file_log(
+        boost::log::keywords::target_file_name = "TestTask.log",
+        boost::log::keywords::file_name = "TestTask.log"
+    );
+    boost::log::core::get()->set_filter
+    (
+        boost::log::trivial::severity >= boost::log::trivial::debug
+    );
+
     cout << "Test 1: DnsResolver. Doing ..." << endl;
     test1();
     cout << "Test 2: Sets intersection. Doing ..." << endl;
