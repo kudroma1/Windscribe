@@ -217,9 +217,52 @@ void test2() {
     testPrintBig("totally intersected ", make_tuple(vector<int>(1e8, 1), vector<int>(2e8, 1)));
 };
 
+void test3() {
+
+    // Configure log options.
+    boost::log::add_file_log(
+        boost::log::keywords::target_file_name = "test3.log",
+        boost::log::keywords::file_name = "test3.log"
+    );
+    boost::log::core::get()->set_filter
+    (
+        boost::log::trivial::severity >= boost::log::trivial::debug
+    );
+
+    // Test data.
+    vector<Segments<int>> data3 = {
+        {make_pair(1,3), make_pair(4,5), make_pair(8,10)}, // not intersected
+        {make_pair(1,3), make_pair(4,5), make_pair(8,10), make_pair(0, 30)}, // one result segment
+        {make_pair(1,3), make_pair(1,3), make_pair(1,3)}, // all the same
+        {make_pair(1,4), make_pair(2,3), make_pair(3,5), make_pair(4,10), make_pair(9,13), make_pair(8,10) }, // last intersected, inside
+        {make_pair(1,4), make_pair(2,3), make_pair(3,5), make_pair(4,10), make_pair(9,13), make_pair(14,15) } // last intersected, inside
+    };
+
+    Algorithms<int> alg;
+
+    auto toString = [](const Segments<int>& segs) {
+        string res;
+        for (const auto& seg : segs) {
+            res += "(";
+            res += to_string(seg.first);
+            res += ", ";
+            res += to_string(seg.second);
+            res += ") ";
+        }
+        return res;
+    };
+    auto calcAndPrint = [&](Segments<int>& segs) {
+        BOOST_LOG_TRIVIAL(debug) << toString(segs) << " ----> " << toString(alg.segmentsUnion(segs));
+    };
+    for (auto& segs : data3)
+        calcAndPrint(segs);
+}
+
 int main(int argc, char** argv) {
     cout << "Test 1: DnsResolver. Doing ..." << endl;
-  //  test1();
+    test1();
     cout << "Test 2: Sets intersection. Doing ..." << endl;
     test2();
+    cout << "Test 3: Segments union. Doing ..." << endl;
+    test3();
 }

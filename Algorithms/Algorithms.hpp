@@ -7,10 +7,17 @@
 #include <thread>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 using namespace std;
 
 namespace Windscribe { 
+
+template<typename T>
+using Segment = std::pair<T, T>;
+
+template<typename T>
+using Segments = vector<Segment<T>>;
 
 /** Several algorithms on sets and segments. */
 template<typename T>
@@ -23,6 +30,9 @@ public:
 
     /** Returns intersection between 2 sets taking into account repetitions. O(nlnn). */
     vector<T> intersection2(vector<T>& v1, vector<T>& v2);
+
+    /** Unites segments. */
+    Segments<T> segmentsUnion(Segments<T>& segs);
 
 private:
     /** Returns hash table where key is element and value is count of its repetition in vector range. O(n) */
@@ -79,6 +89,41 @@ inline vector<T> Algorithms<T>::intersection2(vector<T>& v1, vector<T>& v2)
         }
         else {
             j++;
+        }
+    }
+    return res;
+}
+
+template<typename T>
+inline Segments<T> Algorithms<T>::segmentsUnion(Segments<T>& segs)
+{
+    if (segs.size() <= 1)
+        return segs;
+
+    sort(segs.begin(), segs.end());
+    const auto size = segs.size();
+    Segments<T> res;
+    res.reserve(segs.size());
+    T curIn, curOut;
+    curIn = segs[0].first;
+    curOut = segs[0].second;
+    for (auto i = 0; i < size - 1; ++i) {
+        if (segs[i + 1].first <= curOut) {
+            if (segs[i + 1].second > curOut) {
+                curOut = segs[i + 1].second;
+            }
+            if (i + 1 == size - 1)
+                res.emplace_back(make_pair(curIn, curOut));
+        }
+        else {
+            res.emplace_back(make_pair(curIn, curOut));
+            if (i == size - 2) {
+                res.emplace_back(segs[i + 1]);
+            }
+            else {
+                curIn = segs[i + 1].first;
+                curOut = segs[i + 1].second;
+            }
         }
     }
     return res;
