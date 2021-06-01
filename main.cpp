@@ -1,3 +1,4 @@
+#include "Algorithms.hpp"
 #include "DnsResolver.hpp"
 
 #include <boost/locale.hpp>
@@ -6,9 +7,11 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/utility/setup/file.hpp>
 
+#include <algorithm>
 #include <fstream>
 #include <future>
 #include <iostream>
+#include <random>
 #include <thread>
 #include <unordered_set>
 #include <utility>
@@ -85,7 +88,7 @@ void test1() {
     for (auto&& t : threads)
         t.detach();
 
-    // Wait until all results will be ready and print them when they are ready.
+    // Wait until all results will be ready and printSmall them when they are ready.
     BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << " ======================= LOOKUP INITIATED FOR ALL HOSTS =========================";
     
     int count{ 0 };
@@ -123,7 +126,100 @@ void test1() {
     BOOST_LOG_TRIVIAL(debug) << orderStr;
 }
 
+vector < tuple<vector<int>, vector<int> > > data2 = {
+    make_tuple<vector<int>, vector<int>>(
+        {1, 2, 3, 4, 5, 6, 6, 7, 8, 9},
+        {2, 4, 5, 7, 6, 5, 6, 8, 11, 10}),
+    make_tuple<vector<int>, vector<int>>(
+        {1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {2, 4, 5, 7, 6, 5, 6, 8, 11, 10}),
+    make_tuple<vector<int>, vector<int>>(
+        {1, 1, 1, 1, 1, 1, 1, 1, 1},
+        {2, 4, 1, 1, 1, 5, 7, 6, 5, 6, 8, 11, 10}),
+    make_tuple<vector<int>, vector<int>>(
+        {1, 4, 4, 1, 1, 5, 5, 1, 1},
+        {1, 4, 4, 1, 1, 5, 5, 1, 1}),
+    make_tuple<vector<int>, vector<int>>(
+        {1, 4, 4, 1, 1, 5, 5, 1, 1},
+        {2, 4, 4, 1, 1, 5, 7, 6, 5, 6, 8, 11, 10})
+};
+
+/** Test 2. Set intersection with repetitions. */
+void test2() {
+
+    // Configure log options.
+    boost::log::add_file_log(
+        boost::log::keywords::target_file_name = "test2.log",
+        boost::log::keywords::file_name = "test2.log"
+    );
+    boost::log::core::get()->set_filter
+    (
+        boost::log::trivial::severity >= boost::log::trivial::debug
+    );
+
+    // Helper lambda for printing small arrays.
+    Algorithms<int> alg;
+
+    // Test small sets
+    auto printSmall = [](const tuple<vector<int>, vector<int>>& in, const vector<int>& res) {
+        string str = "";
+        str += "(";
+        for (const auto& el : get<0>(in))
+            str += to_string(el) + " ";
+        str += "), (";
+        for (const auto& el : get<1>(in))
+            str += to_string(el) + " ";
+        str += ")  ----->  (";
+        for (const auto& el : res)
+            str += to_string(el) + " ";
+        str += ")";
+        BOOST_LOG_TRIVIAL(debug) << str;
+
+    };
+    for (const auto& in : data2) {
+        printSmall(in, alg.intersection(get<0>(in), get<1>(in)));
+        auto v1 = get<0>(in);
+        auto v2 = get<1>(in);
+        printSmall(make_tuple(v1, v2), alg.intersection2(v1, v2));
+    }
+
+    // Test big sets;
+    auto testPrintBig = [&](const string& testName, const tuple<vector<int>, vector<int>>& in) {
+        
+        {
+            const auto nowS = chrono::high_resolution_clock::now();
+            const auto resS = alg.intersection(get<0>(in), get<1>(in));
+            const auto endS = chrono::high_resolution_clock::now();
+            const auto durS = chrono::duration_cast<chrono::milliseconds>(endS - nowS).count();
+
+            BOOST_LOG_TRIVIAL(debug) << testName << " in1.size=" << get<0>(in).size()
+                << " in2.size=" << get<1>(in).size()
+                << " res.size=" << resS.size()
+                << " timeSingle=" << durS;
+        } 
+        
+        {
+            auto v1 = get<0>(in);
+            auto v2 = get<1>(in);
+            const auto nowS = chrono::high_resolution_clock::now();
+            const auto resS = alg.intersection2(v1, v2);
+            const auto endS = chrono::high_resolution_clock::now();
+            const auto durS = chrono::duration_cast<chrono::milliseconds>(endS - nowS).count();
+
+            BOOST_LOG_TRIVIAL(debug) << testName << " in1.size=" << get<0>(in).size()
+                << " in2.size=" << get<1>(in).size()
+                << " res.size=" << resS.size()
+                << " timeSingle=" << durS;
+        }
+    };
+    testPrintBig("not intersected ", make_tuple(vector<int>(2e8, 1), vector<int>(2e8, 2)));
+    vector<int> v1(1e8), v2(2e8);
+    testPrintBig("totally intersected ", make_tuple(vector<int>(1e8, 1), vector<int>(2e8, 1)));
+};
+
 int main(int argc, char** argv) {
     cout << "Test 1: DnsResolver. Doing ..." << endl;
-    test1();
+  //  test1();
+    cout << "Test 2: Sets intersection. Doing ..." << endl;
+    test2();
 }
